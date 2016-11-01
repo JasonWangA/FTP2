@@ -1,0 +1,277 @@
+#################################################
+# Created on: 2016年7月15日
+# @author: 王健
+# Email: 945289398@qq.com
+# Blog: http://www.cnblogs.com/jasonwang-2016/p/5646242.html
+    http://www.cnblogs.com/jasonwang-2016/p/5662911.html
+#################################################
+
+程序结构：
+localhost:ftpclient JasonWang$ tree
+.
+|____ftpclient #客户端目录
+| |______init__.py
+| |____bin
+| | |______init__.py
+| | |____ftp_client.py #客户端主程序
+| |____conf
+| | |______init__.py
+| | |____conf.py #客户端配置文件
+| |____home #客户端家目录
+| | |____users
+| | | |____Jason
+| | | | |____.tmp
+| | | | |____aa
+| |____libs #自定义功能
+| | |____lib.py
+| |____src
+| | |______init__.py
+| | |____client.py #主程序源码
+|____ftpserver #服务器端目录
+| |______init__.py
+| |____bin
+| | |______init__.py
+| | |____ftp_server.py #服务端主程序
+| | |____manage_accout.py #服务端后台管理程序
+| |____conf
+| | |______init__.py
+| | |____conf.py #服务端配置文件
+| |____db
+| | |____userinfo
+| | | |____Jack
+| | | | |____base_info.json #用户配置信息文件
+| | | |____Jason
+| | | | |____base_info.json
+| |____home
+| | |____users
+| | | |____Jack #用户家目录
+| | | |____Jason
+| | | | |____aa
+| | | | |____ab
+| | | | |____cc
+| | | | |____test
+| | | | | |____aa
+| |____libs
+| | |______init__.py
+| | |____lib.py
+| |____log
+| | |____2016-07-15 #服务器端日志
+| |____src
+| | |______init__.py
+| | |____admin.py #管理账户源码
+| | |____server.py #服务器端源码
+|____readme
+
+程序配置：
+	配置文件conf.py
+
+	USER_DIR_SIZE = 1024 * 1024 * 1024
+
+    BASE_DIR  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    IP_PORT = ('127.0.0.1',9009) #ftp的监听IP和端口
+
+    USERS_FILE = '../db/userinfo' #用户配置信息目录
+
+    FILE_TRANSFR_SIZE = 1024 #传输数据大小，单位字节
+
+    USERS_HOME_DIR = '%s/home/users/' %BASE_DIR #每个用户的家目录
+
+    TMP_DIR = '%s/tmp' %BASE_DIR #guest 临时目录
+
+    LOG_DIR = '%s/log' %BASE_DIR #日志目录
+
+    USER_DIR_SIZE = 1024 * 1024 * 1024 #用户磁盘配额
+
+    ##状态码信息
+    CODE_LIST = {
+        '200': "Pass authentication!",
+        '201': "Authentication fail wrong username or password",
+        '206':  "transfer file successfuly",
+        '300': "Ready to send file to client",
+        '301': "Client ready to receive file data ",
+        '302': "File doesn't exist",
+        '303': "Path doesn't exist",
+        '304': "space not enough",
+        '305': "IO error",
+        '306': "Socket error",
+        '307': "Transfer file partically",
+        "308": "Validate upload file successful",
+        "309": "Validate upload file fail",
+        "310": "Path or file doesn't exixt",
+        '401': "Invalid instruction!",
+        '404': "file didn't exist",
+        '500': "Invalid execute successful",
+        '501': "Invalid execute fail",
+    }
+
+
+用户配置数据文件：
+{
+"username": "Jason", #用户名
+"maxsize": 1073741824, #家目录容量
+"homedir": "../home/users/Jason", #用户家目录
+"password": "cf79ae6addba60ad018347359bd144d2"#密码经过md5加密对应密码：8888
+}
+
+
+
+
+测试方法：
+    用户：Jason 密码：7777
+    用户：Jack  密码：8888
+    测试文件：   ftpclient/home/users/Jason/test.png  文件
+使用说明：
+
+    代码是在mac或linux的pycharm环境中进行编写和测试的。
+执行方法：
+    说明：
+    代码是在mac或linux的pycharm环境中进行编写和测试的。
+    服务端
+        1、Linux：切换到bin目录，直接执行# python3 ftp_server.py start需要给主程序文件添加可执行权限）
+    客户端
+        1、Linux：切换到bin目录，直接执行# python3 ftp_client.py start（需要给主程序文件添加可执行权限）
+    ftp后台添加账户程序：
+    	1.Linux切换到bin目录，直接执行# python3 manage_account.py需要给主程序文件添加可执行权限）
+
+
+    （1）ftp服务器运行期间
+         提供了一定的信息提示，包括客户端断开连接、上传下载md5码等
+
+    （2）ftp服务器后台管理程序
+         用于添加、删除用户，修改用户密码和磁盘限额
+
+    （3）ftp客户端功能说明
+
+            1. 登录：   客户端启动后需要立刻登录，三次错误退出，成功则显示提示符
+                        [Jason \] ftp>
+                        当前路径会随着cd命令的变化而变化
+
+            3. ls:       查看当前目录文件
+
+            4. cd：      路径切换，可使用绝对路径和相对路径，并限制在用户家目录内
+
+            5. du：      查看用户磁盘限额，每次上传文件时进行空间容量判断，不足则不允许上传
+
+            6. mkdir：   新建目录，可使用绝对路径和相对路径，并自动判断路径的正确与否，是否在
+                         家目录内。
+
+            7. get：     下载文件，可以get xxx,自动判断绝对路径和相对路径，自动
+                         判断文件是否存在，自动判断文件名的变化。
+
+            8. put：     上传文件，可以put xxx，自动判断绝对路径和相对路径，自动
+                         判断文件是否存在，自动判断文件名的变化。
+
+            9. 断点续传： 每次上传和下载文件时，在用户的家目录的.tmp文件夹内，建立一个以文件
+                          MD5值为名的临时文件。正常任务完成时，将该文件复制到目标文件，并删除
+                          该临时文件。当任务中途中断后，再继续执行该任务时，通过MD5值判断是否
+                          有曾经传输过的临时文件，如果有，就从上次传输的后面继续传。
+
+            10.进度条显示： 通过对比已经传输的文件大小和总的文件大小，动态显示传输百分比。
+            11. help 帮助信息
+
+程序使用实例:
+#############
+1.登录：
+localhost:bin JasonWang$ python3 ftp_client.py start
+欢迎使用Jason的ftp
+username:
+Jason
+password:
+7777
+#############
+2.ls:
+Jason: ftp>> ls
+aa
+ab
+cc
+test
+test.png
+##############
+3.cd:
+Jason: ftp>> cd test
+Jason:Jason/test/ ftp>> ls
+aa
+test.png
+##############
+4.du
+Jason:Jason/test/ ftp>> du
+当前已用空间：0.11 MB
+当前可用空间：2047.89 MB
+用户磁盘限额： 2GB
+##############
+5.get
+Jason: ftp>> get aa
+there exist file didn't download completely
+====================================================================================================100%download file done
+file md5:4a1114b3da77d8f188c7cc81dec6ee6f
+temp md5:4a1114b3da77d8f188c7cc81dec6ee6f
+transfer file successfuly
+Jason: ftp>>
+##############
+6.mkdir
+Jason: ftp>> mkdir abc
+308 Validate successful
+Jason: ftp>> ls
+aa
+ab
+abc
+cc
+test
+test.png
+##############
+7.put
+Jason:Jason/test/ ftp>> put test.png
+/Users/JasonWang/PycharmProjects/FTP2/ftpclient/home/users/Jason/test.png
+file:/Users/JasonWang/PycharmProjects/FTP2/ftpclient/home/users/Jason/test.png size:58608
+{'action': 'put', 'md5value': 'd7c61fdb1bdb0d378d78c10ea6058180', 'filename': 'test.png', 'filesize': 58608}
+b'{"filesize": 0, "status": "normal"}'
+start sending file  test.png
+====================================================================================================100%
+Response code:308
+send file done
+##############
+8.断点续传：
+Jason: ftp>> get test.avi
+=================17%^CTraceback (most recent call last):
+  File "/Users/JasonWang/PycharmProjects/FTP2/ftpclient/src/client.py", line 195, in get
+    f.write(recv_data)
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "ftp_client.py", line 12, in <module>
+    client.run()
+  File "/Users/JasonWang/PycharmProjects/FTP2/ftpclient/src/client.py", line 307, in run
+    client.start()
+  File "/Users/JasonWang/PycharmProjects/FTP2/ftpclient/src/client.py", line 43, in start
+    func(user_input_split)
+  File "/Users/JasonWang/PycharmProjects/FTP2/ftpclient/src/client.py", line 199, in get
+    except socket.socket.error as e:
+AttributeError: type object 'socket' has no attribute 'error'
+##重新下载测试文件，接着上次下载
+localhost:bin JasonWang$ python3 ftp_client.py start
+欢迎使用Jason的ftp
+username:
+Jason
+password:
+7777
+Jason: ftp>> get test.avi
+there exist file didn't download completely
+====================================================================================================100%download file done
+file md5:f9ca5d427344f1ff50cda0780e5519e8
+temp md5:f9ca5d427344f1ff50cda0780e5519e8
+transfer file successfuly
+##############
+9.help
+Jason: ftp>> help
+
+【帮助信息】：
+    可执行命令：
+    ls：      查看目录内容
+    cd：      切换目录
+    mkdir：   新建目录（因为平台的原因，暂不支持递归建立）
+    du：      查看用户当前已用磁盘容量
+    get：     下载文件
+    put：     上传文件
